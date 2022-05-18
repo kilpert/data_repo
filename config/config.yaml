@@ -6,7 +6,7 @@ ref:
       species: homo_sapiens
       build: GRCh37
       release: 106
-      gtf: 87 # if gtf release differs from release
+      gtf: 87 # gtf release differs from release
 
   GRCh38_ensembl:
       species: homo_sapiens
