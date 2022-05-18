@@ -1,0 +1,232 @@
+## defaults ############################################################################################################
+workflow.global_resources["api_requests"] = workflow.global_resources.get("api_requests", 2)
+## print(workflow.global_resources)
+
+
+## 1st level of config variable definition: config.yaml ################################################################
+configfile: "config/config.yaml"
+
+
+## 2nd level of config variable definition: snakemake command line args (overwrites previous definitions) ##############
+
+
+## 3rd level of config variable definition: Snakefile (overwrites previous definitions) ################################
+
+print("module:", config)
+
+## outdir
+try:
+    results = config["outdir"]
+except:
+    config["outdir"] = "results"
+
+
+## fix gtf release
+for name in config["ref"].keys():
+    try:
+        config["ref"][name]["gtf"]
+    except:
+        config["ref"][name]["gtf"] = config["ref"][name]["release"]
+
+## config ##############################################################################################################
+
+print("{:#^60}".format(" Config "))
+print(json.dumps(config, sort_keys=True, indent=4))
+
+
+## include #############################################################################################################
+
+## variables ###########################################################################################################
+
+results = config["outdir"]
+names = config["ref"].keys()
+
+## snakemake: all ######################################################################################################
+
+print("{:#^60}".format(" Workflow "))
+
+
+def get_genome_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/genome_fastq/{build}.{release}.genome.{ext}",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["release"],
+                ext=["fa", "fa.fai"],
+            )
+        )
+    return paths
+
+
+def get_cdna_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/genome_fastq/{build}.{release}.cdna.{ext}",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["release"],
+                ext=["fa",],
+            )
+        )
+    return paths
+
+
+def get_annotation_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.gtf",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
+def bgzip_gtf_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.{ext}",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+                ext=["gtf.gz", "gtf.gz.tbi"]
+            )
+        )
+    return paths
+
+
+def gtf2bed_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.bed",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
+rule all:
+    input:
+        get_genome_output,
+        get_cdna_output,
+        ## get_annotation_output, # temp
+        bgzip_gtf_output,
+        gtf2bed_output,
+
+
+## rules ###############################################################################################################
+
+## genome_fastq ##
+
+rule get_genome:
+    output:
+        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+    params:
+        species=lambda wildcards: config["ref"][wildcards.name]["species"],
+        datatype="dna",
+        build=lambda wildcards: config["ref"][wildcards.name]["build"],
+        release=lambda wildcards: config["ref"][wildcards.name]["release"],
+    log:
+        "{results}/{name}/logs/get_genome.{build}.{release}.log"
+    cache:
+        True  # save space and time with between workflow caching (see docs)
+    wrapper:
+        "v1.4.0/bio/reference/ensembl-sequence"
+
+
+rule genome_index:
+    input:
+        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+    output:
+        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa.fai"
+    conda:
+        "envs/samtools.yaml"
+    shell:
+        "samtools faidx {input} "
+
+
+rule get_cdna:
+    output:
+        "{results}/{name}/genome_fastq/{build}.{release}.cdna.fa"
+    params:
+        species=lambda wildcards: config["ref"][wildcards.name]["species"],
+        datatype="cdna",
+        build=lambda wildcards: config["ref"][wildcards.name]["build"],
+        release=lambda wildcards: config["ref"][wildcards.name]["release"],
+    log:
+        "{results}/{name}/logs/get_cdna.{build}.{release}.log"
+    cache:
+        True  # save space and time with between workflow caching (see docs)
+    wrapper:
+        "v1.4.0/bio/reference/ensembl-sequence"
+
+
+## annotation ##
+
+rule get_annotation:
+    output:
+        temp("{results}/{name}/annotation/{build}.{release}.gtf"),
+    params:
+        species=lambda wildcards: config["ref"][wildcards.name]["species"],
+        release=lambda wildcards: config["ref"][wildcards.name]["gtf"],
+        build=lambda wildcards: config["ref"][wildcards.name]["build"],
+        flavor="",  # optional, e.g. chr_patch_hapl_scaff, see Ensembl FTP.
+    log:
+        "{results}/{name}/logs/get_annotation.{build}.{release}.log",
+    cache: True  # save space and time with between workflow caching (see docs)
+    wrapper:
+        "v1.4.0/bio/reference/ensembl-annotation"
+
+
+rule bgzip_gtf:
+    input:
+        "{results}/{name}/annotation/{build}.{release}.gtf"
+    output:
+        gtf="{results}/{name}/annotation/{build}.{release}.gtf.gz",
+        tbi="{results}/{name}/annotation/{build}.{release}.gtf.gz.tbi"
+    conda:
+        "envs/tabix.yaml"
+    shell:
+        "( "
+        "grep '^#' {input}; "
+        "grep -v '^#' {input} "
+        "| sort -k1,1 -k4,4n "
+        ") "
+        "| bgzip "
+        ">{output.gtf} "
+        "&& tabix -p gff {output.gtf} "
+
+
+rule gtf2bed:
+    input:
+        "{results}/{name}/annotation/{build}.{release}.gtf.gz"
+    output:
+        "{results}/{name}/annotation/{build}.{release}.bed"
+    conda:
+        "envs/ucsc.yaml"
+    shell:
+        "zcat {input} "
+        """| awk '{{if ($3!="gene") print $0}}' """
+        "| grep -v '^#' "
+        "| gtfToGenePred stdin stdout "
+        "| genePredToBed stdin {output} "
+

@@ -1,0 +1,15 @@
+outdir: results
+
+
+ref:
+  GRCh37_ensembl:
+      species: homo_sapiens
+      build: GRCh37
+      release: 106
+      gtf: 87 # if gtf release differs from release
+
+  GRCh38_ensembl:
+      species: homo_sapiens
+      build: GRCh38
+      release: 106
+
