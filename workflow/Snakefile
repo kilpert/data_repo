@@ -126,11 +126,11 @@ def gtf2bed_output(wildcards):
 
 rule all:
     input:
-        unpack(get_genome_output),
-        unpack(get_cdna_output),
+        get_genome_output,
+        get_cdna_output,
         ## get_annotation_output, # temp
-        unpack(bgzip_gtf_output),
-        unpack(gtf2bed_output),
+        bgzip_gtf_output,
+        gtf2bed_output,
 
 
 ## rules ###############################################################################################################
