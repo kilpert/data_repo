@@ -12,7 +12,6 @@ configfile: "config/config.yaml"
 
 ## 3rd level of config variable definition: Snakefile (overwrites previous definitions) ################################
 
-print("module:", config)
 
 ## outdir
 try:
