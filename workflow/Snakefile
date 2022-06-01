@@ -259,7 +259,7 @@ rule bwa_mem2_index:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.pac",
     log:
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.log",
+        "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
     params:
         prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
     wrapper:
