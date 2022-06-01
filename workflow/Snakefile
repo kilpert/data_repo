@@ -257,16 +257,14 @@ rule bwa_mem2_index:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.amb",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.ann",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.pac",
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.pac"
     log:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
-    params:
-        prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
     conda:
         "envs/bwa-mem2.yaml"
     shell:
         "bwa-mem2 index "
-        "-p {params.prefix} "
+        "-p {wildcards.results}/{wildcards.name}/index/bwa-mem2/{wildcards.build}.{wildcards.release} "
         "{input} "
         ">{log} 2>&1 "
 
