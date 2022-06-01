@@ -123,6 +123,22 @@ def gtf2bed_output(wildcards):
     return paths
 
 
+def bwa_mem2_index_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/index/bwa-mem2/{build}.{release}.{ext}",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+                ext=["0123", "amb", "ann", "bwt.2bit.64", "pac"]
+            )
+        )
+    return paths
+
+
 rule all:
     input:
         get_genome_output,
@@ -130,6 +146,7 @@ rule all:
         ## get_annotation_output, # temp
         bgzip_gtf_output,
         gtf2bed_output,
+        bwa_mem2_index_output,
 
 
 ## rules ###############################################################################################################
@@ -228,4 +245,23 @@ rule gtf2bed:
         "| grep -v '^#' "
         "| gtfToGenePred stdin stdout "
         "| genePredToBed stdin {output} "
+
+
+## index ##
+
+rule bwa_mem2_index:
+    input:
+        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+    output:
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.0123",
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.amb",
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.ann",
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.pac",
+    log:
+        "{results}/{name}/index/bwa-mem2/{build}.{release}.log",
+    params:
+        prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
+    wrapper:
+        "v1.5.0/bio/bwa-mem2/index"
 
