@@ -262,6 +262,11 @@ rule bwa_mem2_index:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
     params:
         prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
-    wrapper:
-        "v1.5.0/bio/bwa-mem2/index"
+    conda:
+        "envs/bwa-mem2.yaml"
+    shell:
+        "bwa-mem2 index "
+        "-p {params.prefix} "
+        "{input} "
+        ">{log} 2>&1 "
 
