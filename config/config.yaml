@@ -1,6 +1,3 @@
-outdir: results/data_repo
-
-
 ref:
   GRCh37_ensembl:
       species: homo_sapiens
