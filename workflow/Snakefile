@@ -1,6 +1,6 @@
 ## defaults ############################################################################################################
 workflow.global_resources["api_requests"] = workflow.global_resources.get("api_requests", 2)
-workflow.global_resources["mem_gb"] = workflow.global_resources.get("mem_gb", 50)
+workflow.global_resources["mem_gb"] = workflow.global_resources.get("mem_gb", 100)
 ## print(workflow.global_resources)
 
 
