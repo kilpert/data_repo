@@ -18,7 +18,7 @@ configfile: "config/config.yaml"
 try:
     results = config["outdir"]
 except:
-    config["outdir"] = "results/data_repo"
+    config["outdir"] = "results/data_repo" # for default in e.g. a module
 
 
 ## fix gtf release
