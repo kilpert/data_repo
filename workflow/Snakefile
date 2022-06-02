@@ -265,7 +265,7 @@ rule bwa_mem2_index:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.ann",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.pac"
-    prams:
+    params:
         out_prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
     log:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
