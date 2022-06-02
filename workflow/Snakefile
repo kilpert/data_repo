@@ -267,6 +267,8 @@ rule bwa_mem2_index:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.pac"
     log:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
+    benchmark:
+        "{results}/{name}/.benchmark/bwa-mem2.{build}.{release}.tsv"
     conda:
         "envs/bwa-mem2.yaml"
     resources:
