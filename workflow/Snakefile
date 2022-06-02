@@ -265,6 +265,8 @@ rule bwa_mem2_index:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.ann",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.pac"
+    prams:
+        out_prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
     log:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
     benchmark:
@@ -275,7 +277,7 @@ rule bwa_mem2_index:
         mem_gb=50
     shell:
         "bwa-mem2 index "
-        "-p {wildcards.results}/{wildcards.name}/index/bwa-mem2/{wildcards.build}.{wildcards.release} "
+        "-p {params.out_prefix} "
         "{input} "
         ">{log} 2>&1 "
 
