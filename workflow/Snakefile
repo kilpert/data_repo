@@ -50,7 +50,7 @@ def get_genome_output(wildcards):
     for name in names:
         paths.extend(
             expand(
-                "{results}/{name}/genome_fastq/{build}.{release}.genome.{ext}",
+                "{results}/{name}/genome/{build}.{release}.genome.{ext}",
                 results=results,
                 name=name,
                 build=config["ref"][name]["build"],
@@ -66,7 +66,7 @@ def get_cdna_output(wildcards):
     for name in names:
         paths.extend(
             expand(
-                "{results}/{name}/genome_fastq/{build}.{release}.cdna.{ext}",
+                "{results}/{name}/genome/{build}.{release}.cdna.{ext}",
                 results=results,
                 name=name,
                 build=config["ref"][name]["build"],
@@ -151,11 +151,11 @@ rule all:
 
 ## rules ###############################################################################################################
 
-## genome_fastq ##
+## genome ##
 
 rule get_genome:
     output:
-        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+        "{results}/{name}/genome/{build}.{release}.genome.fa"
     params:
         species=lambda wildcards: config["ref"][wildcards.name]["species"],
         datatype="dna",
@@ -171,9 +171,9 @@ rule get_genome:
 
 rule genome_index:
     input:
-        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+        "{results}/{name}/genome/{build}.{release}.genome.fa"
     output:
-        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa.fai"
+        "{results}/{name}/genome/{build}.{release}.genome.fa.fai"
     conda:
         "envs/samtools.yaml"
     shell:
@@ -182,7 +182,7 @@ rule genome_index:
 
 rule get_cdna:
     output:
-        "{results}/{name}/genome_fastq/{build}.{release}.cdna.fa"
+        "{results}/{name}/genome/{build}.{release}.cdna.fa"
     params:
         species=lambda wildcards: config["ref"][wildcards.name]["species"],
         datatype="cdna",
@@ -251,7 +251,7 @@ rule gtf2bed:
 
 rule bwa_mem2_index:
     input:
-        "{results}/{name}/genome_fastq/{build}.{release}.genome.fa"
+        "{results}/{name}/genome/{build}.{release}.genome.fa"
     output:
         "{results}/{name}/index/bwa-mem2/{build}.{release}.0123",
         "{results}/{name}/index/bwa-mem2/{build}.{release}.amb",
