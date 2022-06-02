@@ -1,5 +1,6 @@
 ## defaults ############################################################################################################
 workflow.global_resources["api_requests"] = workflow.global_resources.get("api_requests", 2)
+workflow.global_resources["mem_gb"] = workflow.global_resources.get("mem_gb", 50)
 ## print(workflow.global_resources)
 
 
@@ -165,6 +166,8 @@ rule get_genome:
         "{results}/{name}/logs/get_genome.{build}.{release}.log"
     cache:
         True  # save space and time with between workflow caching (see docs)
+    resources:
+        api_requests=1
     wrapper:
         "v1.4.0/bio/reference/ensembl-sequence"
 
@@ -192,6 +195,8 @@ rule get_cdna:
         "{results}/{name}/logs/get_cdna.{build}.{release}.log"
     cache:
         True  # save space and time with between workflow caching (see docs)
+    resources:
+        api_requests=1
     wrapper:
         "v1.4.0/bio/reference/ensembl-sequence"
 
@@ -209,6 +214,8 @@ rule get_annotation:
     log:
         "{results}/{name}/logs/get_annotation.{build}.{release}.log",
     cache: True  # save space and time with between workflow caching (see docs)
+    resources:
+        api_requests=1
     wrapper:
         "v1.4.0/bio/reference/ensembl-annotation"
 
@@ -262,6 +269,8 @@ rule bwa_mem2_index:
         "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
     conda:
         "envs/bwa-mem2.yaml"
+    resources:
+        mem_gb=50
     shell:
         "bwa-mem2 index "
         "-p {wildcards.results}/{wildcards.name}/index/bwa-mem2/{wildcards.build}.{wildcards.release} "
