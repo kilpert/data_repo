@@ -147,6 +147,21 @@ def gtf2genes_bed_output(wildcards):
     return paths
 
 
+def gtf2genes_saf_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.genes.saf",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
 def gtf2ids_tsv_output(wildcards):
     paths = []
     for name in names:
@@ -186,6 +201,7 @@ rule all:
         bgzip_gtf_output,
         gtf2bed_output,
         gtf2genes_bed_output,
+        gtf2genes_saf_output,
         gtf2ids_tsv_output,
         bwa_mem2_index_output,
 
@@ -302,8 +318,6 @@ rule gtf2genes_bed:
         "{results}/{name}/annotation/{build}.{release}.gtf.gz"
     output:
         "{results}/{name}/annotation/{build}.{release}.genes.bed"
-    conda:
-        "envs/ucsc.yaml"
     shell:
         "zcat {input} "
         """| awk '{{if ($3=="gene") print $0}}' """
@@ -313,6 +327,20 @@ rule gtf2genes_bed:
         """name=gene_id[1]; """
         """if (symbol[1]!="") name=name"-"symbol[1]; """
         """print $1, $4-1, $5, name, 0, $7}}' """
+        ">{output} "
+
+
+rule bed2genes_saf:
+    input:
+        "{results}/{name}/annotation/{build}.{release}.genes.bed"
+    output:
+        "{results}/{name}/annotation/{build}.{release}.genes.saf"
+    shell:
+        "( "
+        "echo -e 'GeneID\tChr\tStart\tEnd\tStrand'; "
+        "cat {input} "
+        """| awk 'BEGIN{{OFS="\t"}}{{print $4, $1, $2, $3, $6}}' """
+        ") "
         ">{output} "
 
 
