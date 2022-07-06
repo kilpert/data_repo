@@ -360,7 +360,7 @@ rule gtf2id_tsv:
         """match($0,/gene_name "([a-zA-Z0-9_-]+)"/,symbol); """
         """name=gene_id[1]; """
         """print transcript_id[1], gene_id[1], symbol[1]}}' """
-        "| sed '/^\s*$/d' " # delete empty line
+        "| sed '/^\s*$/d' " # delete "empty" line
         "| sort -u "
         ">{output} "
 
