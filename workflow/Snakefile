@@ -41,6 +41,14 @@ print(json.dumps(config, sort_keys=True, indent=4))
 results = config["outdir"]
 names = config["ref"].keys()
 
+
+## wildcard constraints ################################################################################################
+
+wildcard_constraints:
+    build="\w+",
+    release="\d+"
+
+
 ## snakemake: all ######################################################################################################
 
 print("{:#^60}".format(" Workflow "))
@@ -124,6 +132,36 @@ def gtf2bed_output(wildcards):
     return paths
 
 
+def gtf2genes_bed_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.genes.bed",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
+def gtf2ids_tsv_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/annotation/{build}.{release}.ids.tsv",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
 def bwa_mem2_index_output(wildcards):
     paths = []
     for name in names:
@@ -147,6 +185,8 @@ rule all:
         ## get_annotation_output, # temp
         bgzip_gtf_output,
         gtf2bed_output,
+        gtf2genes_bed_output,
+        gtf2ids_tsv_output,
         bwa_mem2_index_output,
 
 
@@ -250,9 +290,51 @@ rule gtf2bed:
         "zcat {input} "
         """| awk '{{if ($3!="gene") print $0}}' """
         "| grep -v '^#' "
-        "| gtfToGenePred -geneNameAsName2 -genePredExt stdin stdout "
-        """| awk '{{symbol=$12; if (symbol!="none") $1=$1"-"symbol; print $0}}' """
+        "| gtfToGenePred stdin stdout "
+        ##"| gtfToGenePred -genePredExt stdin stdout "
+        ##"| gtfToGenePred -geneNameAsName2 -genePredExt stdin stdout "
+        ##"""| awk '{{symbol=$12; if (symbol!="none") $1=$1"-"symbol; print $0}}' """
         "| genePredToBed stdin {output} "
+
+
+rule gtf2genes_bed:
+    input:
+        "{results}/{name}/annotation/{build}.{release}.gtf.gz"
+    output:
+        "{results}/{name}/annotation/{build}.{release}.genes.bed"
+    conda:
+        "envs/ucsc.yaml"
+    shell:
+        "zcat {input} "
+        """| awk '{{if ($3=="gene") print $0}}' """
+        """| awk 'BEGIN{{OFS="\t"}}{{ """
+        """match($0,/gene_id "([a-zA-Z0-9_-]+)"/,gene_id); """
+        """match($0,/gene_name "([a-zA-Z0-9_-]+)"/,symbol); """
+        """name=gene_id[1]; """
+        """if (symbol[1]!="") name=name"-"symbol[1]; """
+        """print $1, $4-1, $5, name, 0, $7}}' """
+        ">{output} "
+
+
+rule gtf2id_tsv:
+    input:
+        "{results}/{name}/annotation/{build}.{release}.gtf.gz"
+    output:
+        "{results}/{name}/annotation/{build}.{release}.ids.tsv"
+    conda:
+        "envs/ucsc.yaml"
+    shell:
+        "zcat {input} "
+        """| awk '{{if ($3!="gene") print $0}}' """
+        """| awk 'BEGIN{{OFS="\t"}}{{ """
+        """match($0,/transcript_id "([a-zA-Z0-9_-]+)"/,transcript_id); """
+        """match($0,/gene_id "([a-zA-Z0-9_-]+)"/,gene_id); """
+        """match($0,/gene_name "([a-zA-Z0-9_-]+)"/,symbol); """
+        """name=gene_id[1]; """
+        """print transcript_id[1], gene_id[1], symbol[1]}}' """
+        "| sed '/^\s*$/d' " # delete empty line
+        "| sort -u "
+        ">{output} "
 
 
 ## index ##
