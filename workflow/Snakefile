@@ -250,7 +250,8 @@ rule gtf2bed:
         "zcat {input} "
         """| awk '{{if ($3!="gene") print $0}}' """
         "| grep -v '^#' "
-        "| gtfToGenePred stdin stdout "
+        "| gtfToGenePred -geneNameAsName2 -genePredExt stdin stdout "
+        """| awk '{{symbol=$12; if (symbol!="none") $1=$1"-"symbol; print $0}}' """
         "| genePredToBed stdin {output} "
 
 
