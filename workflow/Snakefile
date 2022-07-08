@@ -86,6 +86,21 @@ def get_cdna_output(wildcards):
     return paths
 
 
+def get_genome_gatk_dict_output(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/genome/{build}.{release}.genome.dict",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
 def get_annotation_output(wildcards):
     paths = []
     for name in names:
@@ -197,6 +212,7 @@ rule all:
     input:
         get_genome_output,
         get_cdna_output,
+        get_genome_gatk_dict_output,
         ## get_annotation_output, # temp
         bgzip_gtf_output,
         gtf2bed_output,
@@ -239,7 +255,22 @@ rule genome_index:
         "samtools faidx {input} "
 
 
-rule get_cdna:
+rule genome_gatk_dict:
+    input:
+        "{results}/{name}/genome/{build}.{release}.genome.fa"
+    output:
+        "{results}/{name}/genome/{build}.{release}.genome.dict"
+    log:
+        "{results}/{name}/logs/genome_gatk_dict.{build}.{release}.log"
+    conda:
+        "envs/gatk.yaml"
+    shell:
+        "gatk CreateSequenceDictionary "
+        "-R {input} "
+        ">{log} 2>&1 "
+
+
+rule genome_cdna:
     output:
         "{results}/{name}/genome/{build}.{release}.cdna.fa"
     params:
@@ -248,7 +279,7 @@ rule get_cdna:
         build=lambda wildcards: config["ref"][wildcards.name]["build"],
         release=lambda wildcards: config["ref"][wildcards.name]["release"],
     log:
-        "{results}/{name}/logs/get_cdna.{build}.{release}.log"
+        "{results}/{name}/logs/genome_cdna.{build}.{release}.log"
     cache:
         True  # save space and time with between workflow caching (see docs)
     resources:
