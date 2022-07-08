@@ -95,7 +95,7 @@ def get_genome_gatk_dict_output(wildcards):
                 results=results,
                 name=name,
                 build=config["ref"][name]["build"],
-                release=config["ref"][name]["gtf"],
+                release=config["ref"][name]["release"],
             )
         )
     return paths
