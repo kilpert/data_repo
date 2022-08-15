@@ -36,6 +36,7 @@ print(json.dumps(config, sort_keys=True, indent=4))
 
 ## include #############################################################################################################
 include: "rules/GRC.smk"
+include: "rules/T2T.smk"
 
 ## variables ###########################################################################################################
 
@@ -213,16 +214,16 @@ def bwa_mem2_index_output(wildcards):
 
 rule all:
     input:
-        ## GRC ##
-        get_genome_output,
-        get_cdna_output,
-        get_genome_gatk_dict_output,
-        ## get_annotation_output, # temp
-        bgzip_gtf_output,
-        gtf2bed_output,
-        gtf2genes_bed_output,
-        gtf2genes_saf_output,
-        gtf2ids_tsv_output,
-        bwa_mem2_index_output,
-        ## T2T ##
+#         ## GRC ##
+#         get_genome_output,
+#         get_cdna_output,
+#         get_genome_gatk_dict_output,
+#         ## get_annotation_output, # temp
+#         bgzip_gtf_output,
+#         gtf2bed_output,
+#         gtf2genes_bed_output,
+#         gtf2genes_saf_output,
+#         gtf2ids_tsv_output,
+#         bwa_mem2_index_output,
+#         ## T2T ##
 

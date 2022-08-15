@@ -12,4 +12,5 @@ ref:
 
   T2T_CHM13:
     species: homo_sapiens
-    version: 2
+    build: v2.0
+    release: 110
