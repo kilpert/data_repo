@@ -1,12 +1,15 @@
 ref:
   GRCh37_ensembl:
-      species: homo_sapiens
-      build: GRCh37
-      release: 106
-      gtf: 87 # gtf release differs from release
+    species: homo_sapiens
+    build: GRCh37
+    release: 106
+    gtf: 87 # gtf release differs from release
 
   GRCh38_ensembl:
-      species: homo_sapiens
-      build: GRCh38
-      release: 106
+    species: homo_sapiens
+    build: GRCh38
+    release: 106
 
+  T2T_CHM13:
+    species: homo_sapiens
+    version: 2
