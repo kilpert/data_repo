@@ -12,5 +12,10 @@ ref:
 
   T2T_CHM13:
     species: homo_sapiens
-    build: v2.0
+    build: T2T_CHM13_v2-0
     release: 110
+    genome:
+      fasta_url: https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/latest_assembly_versions/GCF_009914755.1_T2T-CHM13v2.0/GCF_009914755.1_T2T-CHM13v2.0_genomic.fna.gz
+    annotation:
+      gtf_url: https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/latest_assembly_versions/GCF_009914755.1_T2T-CHM13v2.0/GCF_009914755.1_T2T-CHM13v2.0_genomic.gtf.gz
+

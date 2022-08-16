@@ -35,20 +35,28 @@ print(json.dumps(config, sort_keys=True, indent=4))
 
 
 ## include #############################################################################################################
+include: "rules/general.smk"
 include: "rules/GRC.smk"
 include: "rules/T2T.smk"
+
 
 ## variables ###########################################################################################################
 
 results = config["outdir"]
+names = config["ref"].keys()
 names_GRC = [ x for x in config["ref"].keys() if x.startswith("GRC") ]
 names_T2T = [ x for x in config["ref"].keys() if x.startswith("T2T") ]
 
 
+print("{:#^60}".format(" Variables "))
+print(f"names: {names} {len(names)}")
+print(f"names_GRC: {names_GRC} {len(names_GRC)}")
+print(f"names_T2T: {names_T2T} {len(names_T2T)}")
+
 ## wildcard constraints ################################################################################################
 
 wildcard_constraints:
-    build="\w+",
+    build="[\w-]+",
     release="\d+"
 
 
@@ -56,9 +64,10 @@ wildcard_constraints:
 
 print("{:#^60}".format(" Workflow "))
 
+
 ## GRC ##
 
-def get_genome_output(wildcards):
+def GRC_get_genome_output(wildcards):
     paths = []
     for name in names_GRC:
         paths.extend(
@@ -74,7 +83,7 @@ def get_genome_output(wildcards):
     return paths
 
 
-def get_cdna_output(wildcards):
+def GRC_get_cdna_output(wildcards):
     paths = []
     for name in names_GRC:
         paths.extend(
@@ -92,7 +101,7 @@ def get_cdna_output(wildcards):
 
 def get_genome_gatk_dict_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/genome/{build}.{release}.genome.dict",
@@ -105,24 +114,24 @@ def get_genome_gatk_dict_output(wildcards):
     return paths
 
 
-def get_annotation_output(wildcards):
-    paths = []
-    for name in names_GRC:
-        paths.extend(
-            expand(
-                "{results}/{name}/annotation/{build}.{release}.gtf",
-                results=results,
-                name=name,
-                build=config["ref"][name]["build"],
-                release=config["ref"][name]["gtf"],
-            )
-        )
-    return paths
+# def get_annotation_output(wildcards):
+#     paths = []
+#     for name in names_GRC:
+#         paths.extend(
+#             expand(
+#                 "{results}/{name}/annotation/{build}.{release}.gtf",
+#                 results=results,
+#                 name=name,
+#                 build=config["ref"][name]["build"],
+#                 release=config["ref"][name]["gtf"],
+#             )
+#         )
+#     return paths
 
 
 def bgzip_gtf_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/annotation/{build}.{release}.{ext}",
@@ -138,7 +147,7 @@ def bgzip_gtf_output(wildcards):
 
 def gtf2bed_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/annotation/{build}.{release}.bed",
@@ -153,7 +162,7 @@ def gtf2bed_output(wildcards):
 
 def gtf2genes_bed_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/annotation/{build}.{release}.genes.bed",
@@ -168,7 +177,7 @@ def gtf2genes_bed_output(wildcards):
 
 def gtf2genes_saf_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/annotation/{build}.{release}.genes.saf",
@@ -183,7 +192,7 @@ def gtf2genes_saf_output(wildcards):
 
 def gtf2ids_tsv_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/annotation/{build}.{release}.ids.tsv",
@@ -198,7 +207,7 @@ def gtf2ids_tsv_output(wildcards):
 
 def bwa_mem2_index_output(wildcards):
     paths = []
-    for name in names_GRC:
+    for name in names:
         paths.extend(
             expand(
                 "{results}/{name}/index/bwa-mem2/{build}.{release}.{ext}",
@@ -212,18 +221,58 @@ def bwa_mem2_index_output(wildcards):
     return paths
 
 
+## T2T ##
+
+def T2T_get_genome_output(wildcards):
+    paths = []
+    for name in names_T2T:
+        paths.extend(
+            expand("{results}/{name}/genome/{build}.{release}.genome.{ext}",
+                results=results,
+                name=names_T2T,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["release"],
+                ext=["fa", "fa.fai"],
+            )
+        )
+    return paths
+
+
+## temp
+## def T2T_get_annotation_gtf(wildcards):
+##     paths = []
+##     for name in names_T2T:
+##         paths.extend(
+##             expand("{results}/{name}/annotation/{build}.{release}.{ext}",
+##                 results=results,
+##                 name=names_T2T,
+##                 build=config["ref"][name]["build"],
+##                 release=config["ref"][name]["release"],
+##                 ext=["gtf",],
+##             )
+##         )
+##     return paths
+
+
+## all #################################################################################################################
+
 rule all:
     input:
-#         ## GRC ##
-#         get_genome_output,
-#         get_cdna_output,
-#         get_genome_gatk_dict_output,
-#         ## get_annotation_output, # temp
-#         bgzip_gtf_output,
-#         gtf2bed_output,
-#         gtf2genes_bed_output,
-#         gtf2genes_saf_output,
-#         gtf2ids_tsv_output,
-#         bwa_mem2_index_output,
-#         ## T2T ##
+        ## general
+        get_genome_gatk_dict_output,
+        bgzip_gtf_output,
+        gtf2bed_output,
+        gtf2genes_bed_output,
+        gtf2genes_saf_output,
+        gtf2ids_tsv_output,
+        bwa_mem2_index_output,
+
+        ## GRC ##
+        GRC_get_genome_output,
+        GRC_get_cdna_output,
+        ## get_annotation_output, # temp
+
+        ## T2T ##
+        T2T_get_genome_output,
+        ## T2T_get_annotation_gtf, # temp
 
