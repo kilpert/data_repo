@@ -20,6 +20,7 @@ rule T2T_get_genome:
         "{params.url} "
         ">{log} 2>&1; "
         "zcat {params.download} "
+        """| awk '{{if (/^>/) {{gsub(/^>/, "",$0); match($0,/chromosome ([A-Z0-9]+)/,chrom); print ">"chrom[1]" "$0}} else print $0 }}' """ # add chr to first field!!!
         ">{output}; "
         "rm {params.download} "
 
