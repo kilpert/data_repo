@@ -238,6 +238,19 @@ def T2T_get_genome_output(wildcards):
     return paths
 
 
+def T2T_get_chromosome_alias(wildcards):
+    paths = []
+    for name in names_T2T:
+        paths.extend(
+            expand("{results}/{name}/genome/{build}.{release}.chromosome_alias.tsv",
+                results=results,
+                name=names_T2T,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["release"],
+            )
+        )
+    return paths
+
 ## temp
 ## def T2T_get_annotation_gtf(wildcards):
 ##     paths = []
@@ -274,5 +287,6 @@ rule all:
 
         ## T2T ##
         T2T_get_genome_output,
+        T2T_get_chromosome_alias,
         ## T2T_get_annotation_gtf, # temp
 

@@ -25,7 +25,23 @@ rule T2T_get_genome:
         "rm {params.download} "
 
 
+rule T2T_chromosome_alias:
+    input:
+        "{results}/{name}/genome/{build}.{release}.genome.fa"
+    output:
+        "{results}/{name}/genome/{build}.{release}.chromosome_alias.tsv"
+    shell:
+        "cat "
+        "{input} "
+        "| grep '>' "
+        "| sed 's/^>//' "
+        """| awk 'BEGIN{{OFS="\t"}}{{print $2, $1}}' """
+        ">{output} "
+
+
 rule T2T_get_annotation_gtf:
+    input:
+        alias_tsv = "{results}/{name}/genome/{build}.{release}.chromosome_alias.tsv"
     output:
         temp("{results}/{name}/annotation/{build}.{release}.gtf")
     params:
@@ -48,6 +64,7 @@ rule T2T_get_annotation_gtf:
         "{params.url} "
         ">{log} 2>&1; "
         "zcat {params.download} "
+        "| awk 'FNR==NR{{dict[$1]=$2;next}}{{$1=$1 in dict ?dict[$1]:$0}}1' FS='\t' OFS='\t' {input.alias_tsv} - " 
         ">{output}; "
         "rm {params.download} "
 
