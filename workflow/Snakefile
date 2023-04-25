@@ -241,7 +241,7 @@ rule get_genome:
     resources:
         api_requests=1
     wrapper:
-        "v1.4.0/bio/reference/ensembl-sequence"
+        "v1.26.0/bio/reference/ensembl-sequence"
 
 
 rule genome_index:
@@ -285,7 +285,7 @@ rule genome_cdna:
     resources:
         api_requests=1
     wrapper:
-        "v1.4.0/bio/reference/ensembl-sequence"
+        "v1.26.0/bio/reference/ensembl-sequence"
 
 
 ## annotation ##
@@ -304,7 +304,7 @@ rule get_annotation:
     resources:
         api_requests=1
     wrapper:
-        "v1.4.0/bio/reference/ensembl-annotation"
+        "v1.26.0/bio/reference/ensembl-annotation"
 
 
 rule bgzip_gtf:
