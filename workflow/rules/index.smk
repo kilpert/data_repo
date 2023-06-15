@@ -68,5 +68,4 @@ rule bismark_genome_preparation:
         "{params.extra} "
         "$(dirname {input}) " # Bismark uses *folder* of fastq as input and writes output to this folder!!!
         ">{log} 2>&1 "
-        "&& touch {output} "
 
