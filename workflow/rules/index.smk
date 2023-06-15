@@ -63,7 +63,7 @@ rule bismark_genome_preparation:
         8
     shell:
         "bismark_genome_preparation "
-        "--parallel 4 "
+        "--parallel 4 " # Bismark always spawns 2 threads for each requested process (for CT and GA conversion)!
         "--bowtie2 "
         "{params.extra} "
         "$(dirname {input}) " # Bismark uses *folder* of fastq as input and writes output to this folder!!!
