@@ -42,7 +42,6 @@ rule bismark_input_fastq:
         "ln -s {params.in_fasta} {output} "
 
 
-
 ## Bismark genome preparation
 rule bismark_genome_preparation:
     input:
