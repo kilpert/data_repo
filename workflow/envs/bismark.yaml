@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - bismark =0.24.1
+  - bowtie2 =2.5.1
+  - samtools =1.17

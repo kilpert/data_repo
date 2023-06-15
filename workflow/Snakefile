@@ -36,6 +36,9 @@ print(json.dumps(config, sort_keys=True, indent=4))
 
 ## include #############################################################################################################
 
+include: "rules/index.smk" # Bisulfate mapping and methylation calling
+
+
 ## variables ###########################################################################################################
 
 results = config["outdir"]
@@ -208,6 +211,35 @@ def bwa_mem2_index_output(wildcards):
     return paths
 
 
+def bismark_input_fastq(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/index/bismark/{build}.{release}.genome.fa",
+                results=results,
+                name=name,
+                build=config["ref"][name]["build"],
+                release=config["ref"][name]["gtf"],
+            )
+        )
+    return paths
+
+
+def bismark_genome_preparation(wildcards):
+    paths = []
+    for name in names:
+        paths.extend(
+            expand(
+                "{results}/{name}/index/bismark/Bisulfite_Genome",
+                results=results,
+                name=name,
+            )
+        )
+    return paths
+
+
+
 rule all:
     input:
         get_genome_output,
@@ -220,6 +252,10 @@ rule all:
         gtf2genes_saf_output,
         gtf2ids_tsv_output,
         bwa_mem2_index_output,
+        # Bismark
+        ##bismark_input_fastq, # temp
+        bismark_genome_preparation,
+
 
 
 ## rules ###############################################################################################################
@@ -394,32 +430,4 @@ rule gtf2id_tsv:
         "| sed '/^\s*$/d' " # delete "empty" lines
         "| sort -u "
         ">{output} "
-
-
-## index ##
-
-rule bwa_mem2_index:
-    input:
-        "{results}/{name}/genome/{build}.{release}.genome.fa"
-    output:
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.0123",
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.amb",
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.ann",
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.bwt.2bit.64",
-        "{results}/{name}/index/bwa-mem2/{build}.{release}.pac"
-    params:
-        out_prefix="{results}/{name}/index/bwa-mem2/{build}.{release}"
-    log:
-        "{results}/{name}/logs/bwa-mem2.{build}.{release}.log"
-    benchmark:
-        "{results}/{name}/.benchmark/bwa-mem2.{build}.{release}.tsv"
-    conda:
-        "envs/bwa-mem2.yaml"
-    resources:
-        mem_gb=50
-    shell:
-        "bwa-mem2 index "
-        "-p {params.out_prefix} "
-        "{input} "
-        ">{log} 2>&1 "
 
