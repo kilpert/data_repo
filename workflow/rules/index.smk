@@ -30,7 +30,7 @@ rule bwa_mem2_index:
 
 ## Bismark ##
 
-rule bismark_input_fastq:
+rule bismark_input_fasta:
     input:
         "{results}/{name}/genome/{build}.{release}.genome.fa"
     output:
